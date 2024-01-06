@@ -15,16 +15,18 @@ class Psr7Processor extends HandlerAbstract
         $this->setResponse($response);
     }
 
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
     public function beforeProcess(): static
     {
-        ob_end_clean();
-        ob_start();
-
         $this->response = $this->response->withStatus($this->downloader->getResponseCode());
 
         foreach ($this->downloader->getResponseHeader() as $k => $header) {
             $t = explode(':', $header);
-
+                
             $this->response = $this->response->withHeader($t[0], $t[1]);
         }
 
@@ -34,16 +36,12 @@ class Psr7Processor extends HandlerAbstract
     public function process($chunk): static
     {
         $this->response->getBody()->write($chunk);
-        ob_flush();
-        flush();
 
         return $this;
     }
 
     public function afterProcess(): static
     {
-        ob_end_flush();
-
         return $this;
     }
 
